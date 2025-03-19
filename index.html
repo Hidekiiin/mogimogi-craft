@@ -41,9 +41,19 @@
     let inventory = { fruit: 0, wood: 0, stone: 0 };
     let selectedTool = 'hand';
 
-    // 木と石の位置
-    let trees = [{ x: 200, y: 300 }, { x: 600, y: 400 }];
+    // 木の生成（ランダム配置 5〜8本）
+    let trees = Array.from({ length: Math.floor(Math.random() * 4) + 5 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height * 0.8 + 100
+    }));
+
     let rocks = [{ x: 400, y: 500 }];
+
+    // スワイプ用変数
+    let startX = 0;
+    let startY = 0;
+    let offsetX = 0;
+    let offsetY = 0;
 
     // フルーツクラス
     class Fruit {
@@ -67,7 +77,7 @@
         }
       }
 
-      // 🍑 ピーチを描画
+      // 🍑 ピーチ
       drawPeach() {
         ctx.beginPath();
         ctx.moveTo(this.x, this.y + this.vibration);
@@ -79,7 +89,7 @@
         ctx.closePath();
       }
 
-      // 🍋 レモンを描画
+      // 🍋 レモン
       drawLemon() {
         ctx.beginPath();
         ctx.ellipse(this.x, this.y + this.vibration, 20, 30, Math.PI / 4, 0, 2 * Math.PI);
@@ -88,7 +98,7 @@
         ctx.closePath();
       }
 
-      // 🍇 グレープを描画
+      // 🍇 グレープ
       drawGrape() {
         const colors = ['#8a2be2', '#6a0dad', '#4b0082'];
         for (let i = 0; i < 6; i++) {
@@ -102,7 +112,7 @@
         }
       }
 
-      // 🍎 リンゴを描画
+      // 🍎 リンゴ
       drawApple() {
         ctx.beginPath();
         ctx.arc(this.x, this.y + this.vibration, 20, 0, Math.PI * 2);
@@ -112,11 +122,11 @@
         ctx.beginPath();
         ctx.arc(this.x, this.y - 15 + this.vibration, 5, 0, Math.PI * 2);
         ctx.fillStyle = '#4d2600';
-        ctx.fill(); // 茎
+        ctx.fill();
         ctx.closePath();
       }
 
-      // ふるふる効果 & 落下
+      // ふるふる & 落下
       fall() {
         if (this.isFalling) {
           this.y += 5;
@@ -124,7 +134,7 @@
             this.isFalling = false;
           }
         } else {
-          this.vibration = Math.sin(Date.now() * 0.01) * 3;
+          this.vibration = Math.sin(Date.now() * 0.05) * 3;
         }
       }
     }
@@ -133,7 +143,7 @@
     function drawTrees() {
       ctx.fillStyle = 'green';
       trees.forEach(tree => {
-        ctx.fillRect(tree.x - 25, tree.y - 50, 50, 100);
+        ctx.fillRect(tree.x - 25 + offsetX, tree.y - 50 + offsetY, 50, 100);
       });
     }
 
@@ -142,7 +152,7 @@
       ctx.fillStyle = 'gray';
       rocks.forEach(rock => {
         ctx.beginPath();
-        ctx.arc(rock.x, rock.y, 30, 0, Math.PI * 2);
+        ctx.arc(rock.x + offsetX, rock.y + offsetY, 30, 0, Math.PI * 2);
         ctx.fill();
         ctx.closePath();
       });
@@ -156,8 +166,8 @@
 
     // クリックイベント
     canvas.addEventListener('mousedown', (e) => {
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
+      const mouseX = e.clientX - offsetX;
+      const mouseY = e.clientY - offsetY;
 
       // フルーツをタップで取得
       fruits.forEach((fruit, index) => {
@@ -207,6 +217,26 @@
             alert('🪨 石を取得しました！');
           }
         });
+      }
+    });
+
+    // スワイプ開始
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        startX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        startY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      }
+    });
+
+    // スワイプで移動
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2) {
+        const newX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const newY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        offsetX += newX - startX;
+        offsetY += newY - startY;
+        startX = newX;
+        startY = newY;
       }
     });
 
