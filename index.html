@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>もぎもぎクラフト</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #87ceeb;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    #fruit-count, #tool-info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="fruit-count">🍎 フルーツ: 0</div>
+  <div id="tool-info">🔨 ツール: 手</div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // ゲーム変数
+    let fruits = [];
+    let inventory = { fruit: 0, wood: 0, stone: 0 };
+    let selectedTool = 'hand';
+
+    // 木と石の位置
+    let trees = [{ x: 200, y: 300 }, { x: 600, y: 400 }];
+    let rocks = [{ x: 400, y: 500 }];
+
+    // フルーツクラス
+    class Fruit {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 20;
+        this.isFalling = false;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      fall() {
+        if (this.isFalling) {
+          this.y += 5;
+          if (this.y > canvas.height - 30) {
+            this.isFalling = false;
+          }
+        }
+      }
+    }
+
+    // 木を描画
+    function drawTrees() {
+      ctx.fillStyle = 'green';
+      trees.forEach(tree => {
+        ctx.fillRect(tree.x - 25, tree.y - 50, 50, 100);
+      });
+    }
+
+    // 石を描画
+    function drawRocks() {
+      ctx.fillStyle = 'gray';
+      rocks.forEach(rock => {
+        ctx.beginPath();
+        ctx.arc(rock.x, rock.y, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
+
+    // アイテム取得処理
+    function collectFruit(fruit) {
+      inventory.fruit++;
+      document.getElementById('fruit-count').innerText = `🍎 フルーツ: ${inventory.fruit}`;
+    }
+
+    // クリックイベント
+    canvas.addEventListener('mousedown', (e) => {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      // フルーツをタップで取得
+      fruits.forEach((fruit, index) => {
+        const dist = Math.hypot(mouseX - fruit.x, mouseY - fruit.y);
+        if (dist < fruit.radius) {
+          fruits.splice(index, 1);
+          collectFruit(fruit);
+        }
+      });
+
+      // 木をタップしてフルーツ生成
+      trees.forEach(tree => {
+        if (
+          mouseX > tree.x - 25 &&
+          mouseX < tree.x + 25 &&
+          mouseY > tree.y - 50 &&
+          mouseY < tree.y + 50
+        ) {
+          const newFruit = new Fruit(tree.x, tree.y + 50);
+          newFruit.isFalling = true;
+          fruits.push(newFruit);
+        }
+      });
+
+      // 木材、石の収集
+      if (selectedTool === 'axe') {
+        trees.forEach((tree, index) => {
+          if (
+            mouseX > tree.x - 25 &&
+            mouseX < tree.x + 25 &&
+            mouseY > tree.y - 50 &&
+            mouseY < tree.y + 50
+          ) {
+            inventory.wood++;
+            trees.splice(index, 1);
+            alert('🌳 木材を取得しました！');
+          }
+        });
+      } else if (selectedTool === 'hammer') {
+        rocks.forEach((rock, index) => {
+          const dist = Math.hypot(mouseX - rock.x, mouseY - rock.y);
+          if (dist < 30) {
+            inventory.stone++;
+            rocks.splice(index, 1);
+            alert('🪨 石を取得しました！');
+          }
+        });
+      }
+    });
+
+    // ツール変更
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '1') {
+        selectedTool = 'hand';
+        document.getElementById('tool-info').innerText = '🔨 ツール: 手';
+      } else if (e.key === '2') {
+        selectedTool = 'axe';
+        document.getElementById('tool-info').innerText = '🪓 ツール: 斧';
+      } else if (e.key === '3') {
+        selectedTool = 'hammer';
+        document.getElementById('tool-info').innerText = '🔨 ツール: ハンマー';
+      }
+    });
+
+    // メインループ
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawTrees();
+      drawRocks();
+
+      // フルーツ描画と落下処理
+      fruits.forEach(fruit => {
+        fruit.draw();
+        fruit.fall();
+      });
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // ゲーム開始
+    gameLoop();
+  </script>
+</body>
+</html>
