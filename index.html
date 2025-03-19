@@ -43,31 +43,68 @@
     let rocks = [{ x: 400, y: 500 }];
 
     // フルーツクラス
-    class Fruit {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.radius = 20;
+class Fruit {
+  constructor(x, y, type) {
+    this.x = x;
+    this.y = y;
+    this.type = type; // フルーツの種類
+    this.isFalling = false;
+  }
+
+  draw() {
+    if (this.type === 'peach') {
+      this.drawPeach();
+    } else if (this.type === 'lemon') {
+      this.drawLemon();
+    } else if (this.type === 'grape') {
+      this.drawGrape();
+    }
+  }
+
+  // 🍑 ピーチを描画
+  drawPeach() {
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.bezierCurveTo(this.x - 20, this.y - 30, this.x + 20, this.y - 30, this.x, this.y);
+    ctx.lineTo(this.x, this.y + 25);
+    ctx.arc(this.x, this.y + 10, 15, Math.PI, 0, false);
+    ctx.fillStyle = '#ff9999';
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // 🍋 レモンを描画
+  drawLemon() {
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, 20, 30, Math.PI / 4, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ffeb3b';
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // 🍇 グレープを描画
+  drawGrape() {
+    const colors = ['#8a2be2', '#6a0dad', '#4b0082'];
+    for (let i = 0; i < 6; i++) {
+      let offsetX = (i % 2) * 15;
+      let offsetY = Math.floor(i / 2) * 15;
+      ctx.beginPath();
+      ctx.arc(this.x + offsetX, this.y + offsetY, 8, 0, Math.PI * 2);
+      ctx.fillStyle = colors[i % 3];
+      ctx.fill();
+      ctx.closePath();
+    }
+  }
+
+  fall() {
+    if (this.isFalling) {
+      this.y += 5;
+      if (this.y > canvas.height - 30) {
         this.isFalling = false;
       }
-
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'red';
-        ctx.fill();
-        ctx.closePath();
-      }
-
-      fall() {
-        if (this.isFalling) {
-          this.y += 5;
-          if (this.y > canvas.height - 30) {
-            this.isFalling = false;
-          }
-        }
-      }
     }
+  }
+}
 
     // 木を描画
     function drawTrees() {
