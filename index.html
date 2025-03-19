@@ -146,18 +146,20 @@ class Fruit {
       });
 
       // 木をタップしてフルーツ生成
-      trees.forEach(tree => {
-        if (
-          mouseX > tree.x - 25 &&
-          mouseX < tree.x + 25 &&
-          mouseY > tree.y - 50 &&
-          mouseY < tree.y + 50
-        ) {
-          const newFruit = new Fruit(tree.x, tree.y + 50);
-          newFruit.isFalling = true;
-          fruits.push(newFruit);
-        }
-      });
+trees.forEach(tree => {
+  if (
+    mouseX > tree.x - 25 &&
+    mouseX < tree.x + 25 &&
+    mouseY > tree.y - 50 &&
+    mouseY < tree.y + 50
+  ) {
+    const fruitTypes = ['peach', 'lemon', 'grape'];
+    const randomType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+    const newFruit = new Fruit(tree.x, tree.y + 50, randomType);
+    newFruit.isFalling = true;
+    fruits.push(newFruit);
+  }
+});
 
       // 木材、石の収集
       if (selectedTool === 'axe') {
